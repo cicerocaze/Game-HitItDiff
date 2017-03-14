@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+</head>
+<center>
+
+    <body>
+        <canvas id="canvas" width="600" height="480" style="border:1px solid #000000">
+		</canvas>
+
+        <h3>HitItDifferent</h3>
+        <p align="justify"><strong>HitItDifferent</strong> is a simple casual game which aims to maintain a ball in the squared white area, using two bars, controling them with both hands (green is left hand, orange is right hand). Every time the ball hit on the wall (brown bar), the gamer receives a point. The point is given only if the last rebut is made with a different bar (hand).
+            <p>
+                <p align="justify">Controls:</p>
+                <p align="justify">GREEN BAR (Left Hand) - Use "A" to UP and "Z" to DOWN.</p>
+                <p align="justify">ORANGE BAR (Right Hand) - Use "K" to UP and "M" to DOWN.</p>
+                <script>
+                    var canvas, context;
+                    var jogadorMaoEPosX, jogadorMaoEPosY, jogadorWidth, jogadorHeight, velocidadeJogador, pontosJogador,
+                        jogadorMaoDPosX, jogadorMaoDPosY, ordemMaos;
+                    var maoEteclaCimaPressionada, maoEteclaBaixoPressionada, maoDteclaCimaPressionada, maoDteclaBaixoPressionada;
+                    var paredePosX, paredePosY, paredeWidth, paredeHeight;
+                    var bolaRaio, bolaPosX, bolaPosY, velocidadeBola, bolaParaDireita, bolaAngulo, bolaTempo;
+
+
+                    //2 - Informar que uma área deve ser reservada para iniciar variáveis e o jogo
+                    //Continuando, todas as variáveis globais precisam ser iniciadas
+                    //Método para iniciar o jogo, executado no onload da tag body
+                    window.onloga = init();
+
+                    function init() {
+                        //Variáveis do "canvas"
+                        //A variável de nome "canvas" recebe como valor o Id definido na tag <canvas> do HTML5.
+                        canvas = document.getElementById("canvas"); // procura o canvas.
+                        //A variável de nome "context" recebe como valor, os recursos do canvas, neste caso o "2d".
+                        context = canvas.getContext("2d"); // recupera o contexto 2d.
+
+
+                        //Variáveis do jogador
+                        //A variável de nome "jogadorWidth" recebe o valor 30 de largura, mas pode ser modificado.
+                        jogadorWidth = 30;
+                        //A variável de nome "jogadorHeight" recebe o valor 90 de Altura, mas tambem pode ser modificado.
+                        jogadorHeight = 90;
+                        //A variável "jogadorMaoEPosX" define a posição X do jogador onde ele deve começar e permanecer no Canvas.
+                        jogadorMaoEPosX = 1;
+                        //A variável "jogadorMaoEPosY" define a posição Y do jogador onde ele deve começar e permanecer no Canvas.
+                        jogadorMaoEPosY = (canvas.height - jogadorHeight * 4);
+                        //A variável "jogadorMaoDPosX" define a posição X do jogador onde ele deve começar e permanecer no Canvas.
+                        jogadorMaoDPosX = 0;
+                        //A variável "jogadorMaoDPosY" define a posição Y do jogador onde ele deve começar e permanecer no Canvas.
+                        jogadorMaoDPosY = (canvas.height - jogadorHeight * 2);
+                        //A variável "velocidadeJogador" define a velocidade de deslocamento das mãos do jogador.
+                        velocidadeJogador = 15;
+                        //A variável "pontosJogador" define a quantidade de pontos que o jogador fez.
+                        pontosJogador = 0;
+                        //A variável "ordemMaos" controla a mão correta a rebater
+                        ordemMaos = false;
+
+
+                        //Variáveis do ambiente (level)
+                        //A variável "paredeWidth" define a largura da parede com o valor 20.
+                        paredeWidth = 20;
+                        //A variável "paredeHeight" define a altura da parede com o valor 480, o mesmo valor de altura do Canvas.
+                        paredeHeight = 480;
+                        //A variável "paredePosX" define a posição X da parede dentro do Canvas.
+                        paredePosX = canvas.width - paredeWidth;
+                        //A variável "paredePosY" define a posição Y da parede dentro do Canvas.
+                        paredePosY = 0;
+
+                        //Variáveis de controle
+                        //A variável "maoEteclaCimaPressionada" define quando a tecla para cima, da mão esquerda, é pressionada.
+                        maoEteclaCimaPressionada = false;
+                        //A variável "maoEteclaBaixoPressionada" define quando a tecla para baixo, da mão esquerda, é pressionada.
+                        maoEteclaBaixoPressionada = false;
+                        //A variável "maoDteclaCimaPressionada" define quando a tecla para cima, da mão direita, é pressionada.
+                        maoDteclaCimaPressionada = false;
+                        //A variável "maoDteclaBaixoPressionada" define quando a tecla para baixo, da mão direita, é pressionada. 
+                        maoDteclaBaixoPressionada = false;
+
+
+                        //Variáveis do objeto da atividade
+                        //A variável "bolaRaio" define o tamanho da bola.
+                        bolaRaio = 20;
+                        //A variável "bolaPosX" define a posição X inicial da bola.
+                        bolaPosX = jogadorMaoEPosX + jogadorWidth;
+                        //A variável "bolaPosY" define a posição Y inicial da bola.
+                        bolaPosY = jogadorMaoEPosY + (jogadorHeight / 2);
+                        //A variável "bolaAngulo" define a direção da bola quando ela for rebatida.
+                        bolaAngulo = Math.floor(Math.random() * 21) - 10;
+                        //A variável "bolaParaDireita" determina a mudança de direção da bola.
+                        bolaParaDireita = false;
+                        //A variável "bolaTempo" define o tempo em que a bola permanece fora do jogo quando ela sair do canvas.
+                        //Esta definição é um refinalmento para não reiniciar o jogo imediatamente, se o jogador perder.
+                        bolaTempo = 0;
+                        //A variável "velocidadeBola" define a velocidade de deslocamento da bola no canvas.
+                        velocidadeBola = 15;
+
+                        //X - Deixar para falar no final quando os desenhos estiverem prontos.
+                        //Esta estrutura pode ser reaproveitada em outro jogo, bastando redefinir e/ou renomear as variaveis e funções.    
+                        document.addEventListener('keyup', keyUp, false); // adiciona evento para keyup
+                        document.addEventListener('keydown', keyDown, false); // adiciona evento para keydown
+                        setInterval(gameLoop, 30); // chama a function gameLoop a cada 30 frames
+                    }
+                    //A funcções keyDown e keyUp utilizam as variáveis de controle para verificar se uma tecla foi apertada. Cada tecla possui um código de referência. Neste tutorial foram utilizadas as teclas 38 e 40 que são respectivamente as tecla para cima e para baixo.
+                    //SAIBA MAIS: http://www.upware.com.br/codigos-das-teclas-para-uso-em-action-script-e-java-script/
+
+                    //Apertar botões
+                    function keyDown(e) {
+                        if (e.keyCode == 65) //Cima - mão esquerda
+                        {
+                            maoEteclaCimaPressionada = true;
+                        } else if (e.keyCode == 90) //Baixo - mão esquerda
+                        {
+                            maoEteclaBaixoPressionada = true;
+                        }
+
+                        if (e.keyCode == 75) //Cima - mão direita
+                        {
+                            maoDteclaCimaPressionada = true;
+                        } else if (e.keyCode == 77) //Baixo - mão direita
+                        {
+                            maoDteclaBaixoPressionada = true;
+                        }
+                    }
+
+                    //Soltar botões
+                    function keyUp(e) {
+                        if (e.keyCode == 65) //Cima - mão esquerda
+                        {
+                            maoEteclaCimaPressionada = false;
+                        } else if (e.keyCode == 90) //Baixo - mão esquerda
+                        {
+                            maoEteclaBaixoPressionada = false;
+                        }
+
+                        if (e.keyCode == 75) //Cima - mão direita
+                        {
+                            maoDteclaCimaPressionada = false;
+                        } else if (e.keyCode == 77) //Baixo - mão direita
+                        {
+                            maoDteclaBaixoPressionada = false;
+                        }
+                    }
+
+                    //A função "gameLoop" faz com que o jogo execute repetidamente até o usuário atualizar a página ou fechar o jogo / navegador.
+                    function gameLoop() {
+                        // Controles mão esquerda "A - para cima" e "Z - para baixo"
+                        if (maoEteclaCimaPressionada != maoEteclaBaixoPressionada) { // se o jogador estiver pressionando a tecla baixo ou cima
+                            if (maoEteclaCimaPressionada) { // se for para cima...
+                                if (jogadorMaoEPosY > 0) { // se não sair da tela...
+                                    jogadorMaoEPosY -= velocidadeJogador; // muda a posição
+                                }
+                            } else { // se for para baixo...
+                                if (jogadorMaoEPosY < (canvas.height - jogadorHeight)) { // se não sair da tela...
+                                    jogadorMaoEPosY += velocidadeJogador; // muda a posição
+                                }
+                            }
+                        }
+
+                        // Controles mão direita "K - para cima" e "M - para baixo"
+                        if (maoDteclaCimaPressionada != maoDteclaBaixoPressionada) { // se o jogador estiver pressionando a tecla baixo ou cima
+                            if (maoDteclaCimaPressionada) { // se for para cima...
+                                if (jogadorMaoDPosY > 0) { // se não sair da tela...
+                                    jogadorMaoDPosY -= velocidadeJogador; // muda a posição
+                                }
+                            } else { // se for para baixo...
+                                if (jogadorMaoDPosY < (canvas.height - jogadorHeight)) { // se não sair da tela...
+                                    jogadorMaoDPosY += velocidadeJogador; // muda a posição
+                                }
+                            }
+                        }
+
+                        // Rebate bola com a mão Esquerda
+                        if (bolaTempo <= 0) { // se a bola estiver em jogo, o tempo é zero (após marcar ponto, a bola fica invisível por um tempo)
+                            if ((bolaPosX - bolaRaio) <= (jogadorMaoEPosX + jogadorWidth)) { // se o jogador enconstar na bola (eixo X)...
+                                if ((bolaPosY + bolaRaio > jogadorMaoEPosY) && (bolaPosY - bolaRaio < jogadorMaoEPosY + jogadorHeight)) { // se o jogador enconstar na bola (eixo Y)...
+                                    bolaParaDireita = true; // a bola muda de lado e é rebatida para o oponente
+                                    if (maoEteclaCimaPressionada) { // se o jogador estiver indo para cima quando tocar na bola...
+                                        bolaAngulo = Math.floor(Math.random() * 10) - 9; // mandamos a bola na diagonal para cima
+                                    } else { // se o jogador estiver indo para baixo quando tocar na bola...
+                                        bolaAngulo = Math.floor((Math.random() * 10)); // mandamos a bola na diagonal pra baixo
+                                    }
+
+                                    if (ordemMaos == true) {
+                                        pontosJogador = 0;
+                                    }
+                                    ordemMaos = true
+                                }
+                            }
+                        }
+                        // Rebate bola com a mão Direita
+                        if (bolaTempo <= 0) { // se a bola estiver em jogo, o tempo é zero (após marcar ponto, a bola fica invisível por um tempo)
+                            if ((bolaPosX - bolaRaio) <= (jogadorMaoDPosX + jogadorWidth)) { // se o jogador enconstar na bola (eixo X)...
+                                if ((bolaPosY + bolaRaio > jogadorMaoDPosY) && (bolaPosY - bolaRaio < jogadorMaoDPosY + jogadorHeight)) { // se o jogador enconstar na bola (eixo Y)...
+                                    bolaParaDireita = true; // a bola muda de lado e é rebatida para o oponente
+                                    if (maoDteclaCimaPressionada) { // se o jogador estiver indo para cima quando tocar na bola...
+                                        bolaAngulo = Math.floor(Math.random() * 10) - 9; // mandamos a bola na diagonal pra cima
+                                    } else { // se o jogador estiver indo para baixo quando tocar na bola...
+                                        bolaAngulo = Math.floor((Math.random() * 10)); // mandamos a bola na diagonal pra baixo
+                                    }
+
+                                    if (ordemMaos == false) {
+                                        pontosJogador = 0;
+                                    }
+                                    ordemMaos = false
+                                }
+                            }
+                        }
+
+                        //Pontuação
+                        if (bolaTempo <= 0) {
+                            if ((bolaPosX + bolaRaio) >= paredePosX) { // se a bola encostar no eixo X da parede...
+                                if ((bolaPosY + bolaRaio > paredePosY) && (bolaPosY - bolaRaio < paredePosY + paredeHeight)) { // e se a bola tambem encontar no eixo Y da parede...
+                                    pontosJogador++;
+                                    bolaParaDireita = false; // a bola muda de lado e é rebatida para o jogador
+                                    bolaAngulo = bolaAngulo;
+                                }
+                                /*
+                                else if()
+                                {
+						
+                                }
+                                */
+                            }
+                        }
+
+                        //Direção da bola
+                        if (bolaTempo <= 0) {
+                            if ((bolaPosY - bolaRaio <= 0) || (bolaPosY + bolaRaio > canvas.height)) { // se a bola bater em cima ou em baixo da tela...
+                                bolaAngulo = bolaAngulo * -1; // multiplicamos por -1 para inverter o sinal e a direção da bola no eixo Y
+                            }
+                            bolaPosY += bolaAngulo; // movemos a bola para cima ou para baixo, de acordo com o cáculo acima
+
+                            if (bolaParaDireita) { // se a bola estiver indo para a direita...
+                                bolaPosX += velocidadeBola; // movemos a bola para a direita
+                            } else { // se estiver indo para a esquerda...
+                                bolaPosX -= velocidadeBola; // movemos a bola para a esquerda
+                            }
+                        }
+
+                        if (bolaPosX <= -bolaRaio) { // se a bola saiu da tela...
+                            pontosJogador = 0;
+                            if (bolaTempo >= 50) { // se so tempo de deixar a bola invisível passou...
+
+                                //Reposiciona bola na mao esquerda do jogador
+                                bolaPosX = jogadorMaoEPosX + (jogadorWidth / 2);
+                                bolaPosY = jogadorMaoEPosY + (jogadorHeight / 2);
+                                bolaParaDireita = false; // faz ela ir em direção ao jogador
+                                bolaAngulo = Math.floor(Math.random() * 21) - 10; // faz a bola ir para uma direção aleatória
+                                bolaTempo = 0; // zera o tempo de deixar a bola invisível e a coloca em jogo novamente
+                            } else { // se o tempo de deixar a bola invisível ainda não passou...
+                                bolaTempo++; // continuamos contando até 50
+                            }
+                        }
+
+                        //Redesenha tudo na tela em tempo de execução
+                        context.clearRect(0, 0, canvas.width, canvas.height); // limpa a tela antes de desenhar
+
+                        //Desenha mão esquerda
+                        context.fillStyle = "rgb(153,204,50)";
+                        context.fillRect(jogadorMaoEPosX, jogadorMaoEPosY, jogadorWidth, jogadorHeight);
+
+                        //Desenha mão direita
+                        context.fillStyle = "#FFA500";
+                        context.fillRect(jogadorMaoDPosX, jogadorMaoDPosY, jogadorWidth, jogadorHeight);
+
+                        //Desenha Parede
+                        context.fillStyle = "#6B4226";
+                        context.fillRect(paredePosX, paredePosY, paredeWidth, paredeHeight);
+
+                        //Desenha Bolinha
+                        context.fillStyle = "Blue";
+                        //Inicia o modo de desenho.
+                        context.beginPath();
+                        //Desenha o círculo desejado com as coordenadas no centro.
+                        context.arc(bolaPosX, bolaPosY, bolaRaio, 0, Math.PI * 2, true);
+                        //Finaliza o caminho (opcional).
+                        context.closePath();
+                        //Preenche a bolinha.
+                        context.fill();
+
+                        //Painel de pontuação
+                        //Variável local para não alterar pontosJogador.
+                        var pontosA = pontosJogador;
+                        //Estrutura condicional que define a posição do zero no placar. Se o número de pontos for menor que 10, colocamos o zero á esquerda.
+                        if (pontosA < 10) {
+                            pontosA = "0" + pontosA;
+                        }
+                        //Define o formato do texto do painel.
+                        //Tamanho e fonte para desenhar o texto.
+                        context.font = "42pt Helvetica";
+                        //Cor preta (opcional).
+                        context.fillStyle = "#000000";
+                        //Escreve o texto na tela na posição desejada.
+                        context.fillText(pontosA, (canvas.width / 2) - 70, 50);
+                    }
+                </script>
+    </body>
+</center>
+
+</html>
